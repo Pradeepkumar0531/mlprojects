@@ -6,6 +6,7 @@ import pandas as pd
 
 from src.exception import CustomException
 from sklearn.metrics import r2_score
+from sklearn.model_selection import RandomizedSearchCV
 
 def save_object(file_path,obj):
     try:
@@ -17,10 +18,17 @@ def save_object(file_path,obj):
     except Exception as e:
         raise CustomException(e,sys)
 
-def evaluate_model(X_train, Y_train, X_test, Y_test, models):
+def evaluate_model(X_train, Y_train, X_test, Y_test, models,param):
     try:
         report = {}
         for model_name, model in models.items():
+            
+            para=param[model_name]
+
+            rs=RandomizedSearchCV(model,para,cv=3)
+            rs.fit(X_train,Y_train)
+
+            model.set_params(**rs.best_params_)
             model.fit(X_train, Y_train)
 
             Y_train_pred = model.predict(X_train)
